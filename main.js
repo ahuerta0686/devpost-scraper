@@ -4,7 +4,7 @@ var request = require('request'),
 var url = 'http://bitcamp15.devpost.com/submissions';
 
 module.exports = {
-    submissions: function (hackathon, page, filters) {
+    submissions: function (hackathon, page, filters, callback) {
         var url = 'http://' + hackathon + '.devpost.com/submissions/search?';
         if (page != undefined) {
             url += "page=" + page;
@@ -29,7 +29,7 @@ module.exports = {
                     });
                 });
 
-                return data;
+                callback(data);
             }
         });
     }
