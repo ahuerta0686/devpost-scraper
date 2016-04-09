@@ -96,15 +96,6 @@ var hackathonProjectsAll = function (hackathon) {
     return deferred.promise;
 };
 
-hackathonAll('bitcamp15')
-.then(
-    function successCallback(data) {
-        console.log(data);
-    },
-    function errorCallback(error) {
-        console.log(error);
-    });
-
 module.exports = {
     hackathon: {
         projects: {
