@@ -101,6 +101,32 @@ var hackathonProjectsAll = function (hackathon) {
     return deferred.promise;
 };
 
+var hackathonFilters = function (hackathon) {
+    var deferred = Q.defer();
+
+    var url = 'http://' + hackathon + '.devpost.com/submissions';
+    request(url, function (error, response, html) {
+        var data = [];
+        if (!error) {
+            var $ = cheerio.load(html);
+            $('.filter-submissions > .panel > ul > li').each(function (index, element) {
+                var filterObj = $(element).find('.checkbox > input');
+                data.push({
+                    paramKey: $(filterObj).attr('name'),
+                    paramValue: $(filterObj).attr('value')
+                });
+            });
+
+            deferred.resolve(data);
+        }
+        else {
+            deferred.reject(error);
+        }
+    });
+
+    return deferred.promise;
+};
+
 var projectFindBySlug = function (projectSlug) {
     var deferred = Q.defer();
 
@@ -183,6 +209,7 @@ var projectFindBySlug = function (projectSlug) {
 
 module.exports = {
     hackathon: {
+        filters: hackathonFilters,
         projects: {
             all: hackathonProjectsAll
         }
