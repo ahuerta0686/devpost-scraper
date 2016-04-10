@@ -164,7 +164,8 @@ var projectFindBySlug = function (projectSlug) {
                 tags: projectTags,
                 imageUrls: projectImages,
                 members: projectMembers,
-                event: projectEvent
+                event: projectEvent,
+                slug: projectSlug
             });
 
         }
