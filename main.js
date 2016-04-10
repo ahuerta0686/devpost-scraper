@@ -60,6 +60,7 @@ var hackathonPage = function (hackathon, page, filters) {
                 });
             });
 
+            console.log(data);
             deferred.resolve(data);
         }
         else {
@@ -175,8 +176,6 @@ var projectFindBySlug = function (projectSlug) {
 
     return deferred.promise;
 };
-
-hackathonPage('bitcamp15', 1);
 
 module.exports = {
     hackathon: {
