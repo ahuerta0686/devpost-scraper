@@ -36,6 +36,12 @@ var hackathonPage = function (hackathon, page, filters) {
         url += "page=" + page;
     }
 
+    if (Array.isArray(filters)) {
+        filters.forEach(function (filter) {
+            url += '&' + filter.paramKey + '=' + filter.paramValue;
+        });
+    }
+
     request(url, function (error, response, html) {
         var data = [];
         if (!error) {
@@ -70,7 +76,7 @@ var hackathonPage = function (hackathon, page, filters) {
     return deferred.promise;
 };
 
-var hackathonProjectsAll = function (hackathon) {
+var hackathonProjectsAll = function (hackathon, filters) {
     var deferred = Q.defer();
 
     // var baseUrl = 'http://' + hackathon + '.devpost.com/submissions/search?page=';
@@ -79,7 +85,7 @@ var hackathonProjectsAll = function (hackathon) {
         function successCallback(numPages) {
             var promises = [];
             for (var i = 1; i <= numPages; i++) {
-                promises.push(hackathonPage(hackathon, i));
+                promises.push(hackathonPage(hackathon, i, filters));
             }
             Q.all(promises)
             .then(
