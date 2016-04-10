@@ -60,7 +60,6 @@ var hackathonPage = function (hackathon, page, filters) {
                 });
             });
 
-            console.log(data);
             deferred.resolve(data);
         }
         else {
