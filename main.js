@@ -104,11 +104,16 @@ var projectFindBySlug = function (projectSlug) {
         if (!error) {
             var $ = cheerio.load(html);
 
+            var titleObj = $('#app-title');
+            var descriptionObj = $('#software-header').find('p');
             var detailsObj = $('#app-details-left > div:nth-of-type(2)');
             var builtWithObj = $('.cp-tag');
             var slidesObj = $('.software_photo_image');
             var teamMembersObj = $('.software-team-member');
-            var hackathonObj = $('.software-list-with-thumbnail').html();
+            var hackathonObj = $('.software-list-with-thumbnail');
+
+            var projectTitle = $(titleObj).text();
+            var projectDescription = $(descriptionObj).text().trim();
 
             var projectDetails = [];
             $(detailsObj).children().each(function (index, element) {
@@ -146,10 +151,13 @@ var projectFindBySlug = function (projectSlug) {
             var re = /https{0,1}:\/\/(.*)\.devpost\.com\//;
             projectEvent.serviceId = projectEvent.serviceId.match(re)[1];
 
+
             deferred.resolve({
+                title: projectTitle,
+                description: projectDescription,
                 details: projectDetails,
                 tags: projectTags,
-                images: projectImages,
+                imageUrls: projectImages,
                 members: projectMembers,
                 event: projectEvent
             });
@@ -162,6 +170,8 @@ var projectFindBySlug = function (projectSlug) {
 
     return deferred.promise;
 };
+
+projectFindBySlug('poketch-ng703');
 
 module.exports = {
     hackathon: {
