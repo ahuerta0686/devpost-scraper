@@ -126,8 +126,6 @@ var hackathonFilters = function (hackathon) {
                     }).text()
 
                 });
-
-                console.log(data);
             });
 
             deferred.resolve(data);
@@ -139,8 +137,6 @@ var hackathonFilters = function (hackathon) {
 
     return deferred.promise;
 };
-
-hackathonFilters('bitcamp15');
 
 var projectFindBySlug = function (projectSlug) {
     var deferred = Q.defer();
