@@ -171,8 +171,6 @@ var projectFindBySlug = function (projectSlug) {
     return deferred.promise;
 };
 
-projectFindBySlug('poketch-ng703');
-
 module.exports = {
     hackathon: {
         projects: {
