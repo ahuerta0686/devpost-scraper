@@ -46,12 +46,17 @@ var hackathonPage = function (hackathon, page, filters) {
                 var title = $( $(element).find('figcaption > div > h5') ).text().trim();
                 var desc = $( $(element).find('figcaption > div > p') ).text().trim();
                 var teamSize = $(element).find('.user-profile-link').length;
+                var slug = $('.link-to-software').attr('href');
+
+                var re = /^.*software\/()\/{0,1}$/;
+                slug = slug.match(re)[1];
                 data.push({
                     'url': link,
                     'imageUrl': image,
                     'title': title,
                     'description': desc,
-                    'teamSize': teamSize
+                    'teamSize': teamSize,
+                    'slug': slug
                 });
             });
 
