@@ -111,7 +111,11 @@ var projectFindBySlug = function (projectSlug) {
 
             var titleObj = $('#app-title');
             var descriptionObj = $('#software-header').find('p');
-            var detailsObj = $('#app-details-left > div:nth-of-type(2)');
+            var detailsObj = {};
+            if ($('#app-details-left > .galley'))
+                detailsObj = $('#app-details-left > div:nth-of-type(2)');
+            else 
+                detailsObj = $('#app-details-left > div:nth-of-type(1)');
             var builtWithObj = $('.cp-tag');
             var slidesObj = $('.software_photo_image');
             var teamMembersObj = $('.software-team-member');
