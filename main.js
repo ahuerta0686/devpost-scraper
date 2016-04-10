@@ -119,8 +119,15 @@ var hackathonFilters = function (hackathon) {
                 var filterObj = $(element).find('.checkbox > input');
                 data.push({
                     paramKey: $(filterObj).attr('name'),
-                    paramValue: $(filterObj).attr('value')
+                    paramValue: $(filterObj).attr('value'),
+                    // text: $(filterObj).parent().html()
+                    text: $(filterObj).parent().contents().filter(function () {
+                        return this.nodeType == 3;
+                    }).text()
+
                 });
+
+                console.log(data);
             });
 
             deferred.resolve(data);
@@ -132,6 +139,8 @@ var hackathonFilters = function (hackathon) {
 
     return deferred.promise;
 };
+
+hackathonFilters('bitcamp15');
 
 var projectFindBySlug = function (projectSlug) {
     var deferred = Q.defer();
