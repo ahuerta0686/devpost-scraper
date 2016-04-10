@@ -112,7 +112,7 @@ var projectFindBySlug = function (projectSlug) {
             var titleObj = $('#app-title');
             var descriptionObj = $('#software-header').find('p');
             var detailsObj = {};
-            if ($('#app-details-left > .galley'))
+            if ($('#app-details-left > #gallery').length)
                 detailsObj = $('#app-details-left > div:nth-of-type(2)');
             else 
                 detailsObj = $('#app-details-left > div:nth-of-type(1)');
