@@ -2,9 +2,7 @@ var request = require('request'),
     cheerio = require('cheerio'),
     Q = require('q');
 
-var url = 'http://bitcamp15.devpost.com/submissions';
-
-var numPages = function (hackathon) {
+var hackathonPagesLength = function (hackathon) {
     var deferred = Q.defer();
 
     var url = 'http://' + hackathon + '.devpost.com/submissions/search?page=1';
@@ -80,7 +78,7 @@ var hackathonProjectsAll = function (hackathon, filters) {
     var deferred = Q.defer();
 
     // var baseUrl = 'http://' + hackathon + '.devpost.com/submissions/search?page=';
-    numPages(hackathon)
+    hackathonPagesLength(hackathon)
     .then(
         function successCallback(numPages) {
             var promises = [];
@@ -223,45 +221,12 @@ module.exports = {
         filters: hackathonFilters,
         projects: {
             all: hackathonProjectsAll
+        },
+        pages: {
+            length: hackathonPagesLength
         }
     },
     project: {
         findBySlug: projectFindBySlug
-    },
-    submissions: function (hackathon, page, filters) {
-        var deferred = Q.defer();
-
-        var url = 'http://' + hackathon + '.devpost.com/submissions/search?';
-        if (page != undefined) {
-            url += "page=" + page;
-        }
-
-        request(url, function (error, response, html) {
-            var data = [];
-            if (!error) {
-                var $ = cheerio.load(html);
-                $('.gallery-item').each(function (index, element) {
-                    var link = $( $(element).find('.link-to-software') ).attr('href');
-                    var image = $( $(element).find('figure > img') ).attr('src');
-                    var title = $( $(element).find('figcaption > div > h5') ).text().trim();
-                    var desc = $( $(element).find('figcaption > div > p') ).text().trim();
-                    var teamSize = $(element).find('.user-profile-link').length;
-                    data.push({
-                        'url': link,
-                        'imageUrl': image,
-                        'title': title,
-                        'description': desc,
-                        'teamSize': teamSize
-                    });
-                });
-
-                deferred.resolve(data);
-            }
-            else {
-                deferred.reject(error);
-            }
-        });
-
-        return deferred.promise;
     }
 }
