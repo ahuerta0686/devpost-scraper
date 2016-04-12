@@ -2,7 +2,7 @@
   "name": "devpost-scraper",
   "version": "0.0.1",
   "description": "Get all submitted projects from a hackathon...and more?",
-  "main": "main.js",
+  "main": "devpost-scraper.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
