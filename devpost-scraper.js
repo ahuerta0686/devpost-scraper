@@ -2,29 +2,101 @@ var request = require('request'),
     cheerio = require('cheerio'),
     Q = require('q');
 
+/*
+ * @param hackathon - Subdomain used for a hackathon page on Devpost
+ */
 var hackathonPagesLength = function (hackathon) {
     var deferred = Q.defer();
 
     var url = 'http://' + hackathon + '.devpost.com/submissions/search?page=1';
+    setTimeout(function () {
     request(url, function (error, response, html) {
-        if (!error) {
-            var $ = cheerio.load(html);
-            var pages = $( $('.next.next_page').prev() ).text();
-            var pagesInt = parseInt(pages);
-            if (Number.isInteger(pagesInt)) {
-                deferred.resolve(pagesInt);
-            }
-            else {
-                deferred.reject("Error: Not a number");
-            }
-        }
+        if (error)
+            deferred.reject(error);
+        else if (response.statusCode != 200)
+            deferred.reject(response);
         else {
-            deferred.reject("Error: Not a valid hackathon");
+            var $ = cheerio.load(html);
+
+            // <li> with class "next next_page" is right after the last page number
+            // If not matched there is only one page
+            var nextPageSelector = $('.next.next_page');
+            if (nextPageSelector.length) {
+                var lastPageSelector = nextPageSelector.prev();
+                var numPages = parseInt(lastPageSelector.text());
+                deferred.resolve(numPages);
+            }
+            else deferred.resolve(1);
         }
-    });
+    })}, 0);
 
     return deferred.promise;
 };
+
+/*
+ * @param hackathon - Subdomain used for a hackathon page on Devpost
+ */
+var hackathonProjects = function (hackathon, page, filters) {
+    var deferred = Q.defer();
+
+    var url = 'http://' + hackathon + '.devpost.com/submissions/search?';
+    if (page)
+        url += 'page=' + page;
+    if (Array.isArray(filters)) {
+        filters.forEach(function (filter) {
+            url += '&' + filter.paramKey + '=' + filter.paramValue;
+        });
+    }
+
+    setTimeout(function () {
+    request(url, function (error, response, html) {
+        var data = [];
+
+        if (error)
+            deferred.reject(error);
+        else if (response.statusCode != 200)
+            deferred.reject(response);
+        else {
+            var $ = cheerio.load(html);
+
+            /*
+             * link - URL to software page
+             * imageUrl - URL for the preview image
+             * title - Project title
+             * tagline - Short description under the title
+             * teamSize - Number of members shown
+             * slug - Idenifier for project
+             */
+            $('.gallery-item').each(function (index, item) {
+                var link = $(item).find('.link-to-software').attr('href');
+                var imageUrl = $(item).find('figure > img').attr('src');
+                var title = $(item).find('.software-entry-name > h5').text().trim();
+                var tagline = $(item).find('.software-entry-name > p').text().trim();
+                var teamSize = $(item).find('.user-profile-link').length;
+                var numLikes = $(item).find('.like-count').content().filter(function () {
+                    return this.nodeType == 3;
+                }).text().trim();
+                var numComments = $(item).find('.comment-count').content().filter(function () {
+                    return this.nodeType == 3;
+                }).text().trim();
+
+                var slug = link.match(/^.*software\/(.*)\/{0,1}$/)[1];
+                deferred.resolve(slug);
+            });
+        }
+    })}, 0);
+
+    return deferred.promise;
+};
+
+// hackathonProjects('bitcamp16')
+// .then(
+//     function (data) {
+//         console.log(data);
+//     },
+//     function (error) {
+//         console.log(error);
+//     });
 
 var hackathonPage = function (hackathon, page, filters) {
     var deferred = Q.defer();
