@@ -68,83 +68,85 @@ var hackathonProjects = function (hackathon, page, filters) {
              * slug - Idenifier for project
              */
             $('.gallery-item').each(function (index, item) {
-                var link = $(item).find('.link-to-software').attr('href');
+                var url = $(item).find('.link-to-software').attr('href');
                 var imageUrl = $(item).find('figure > img').attr('src');
                 var title = $(item).find('.software-entry-name > h5').text().trim();
                 var tagline = $(item).find('.software-entry-name > p').text().trim();
-                var teamSize = $(item).find('.user-profile-link').length;
-                var numLikes = $(item).find('.like-count').content().filter(function () {
+                var numMembers = $(item).find('.user-profile-link').length;
+                var numLikes = $(item).find('.like-count').contents().filter(function () {
                     return this.nodeType == 3;
                 }).text().trim();
-                var numComments = $(item).find('.comment-count').content().filter(function () {
+                var numComments = $(item).find('.comment-count').contents().filter(function () {
                     return this.nodeType == 3;
                 }).text().trim();
 
-                var slug = link.match(/^.*software\/(.*)\/{0,1}$/)[1];
-                deferred.resolve(slug);
-            });
-        }
-    })}, 0);
-
-    return deferred.promise;
-};
-
-// hackathonProjects('bitcamp16')
-// .then(
-//     function (data) {
-//         console.log(data);
-//     },
-//     function (error) {
-//         console.log(error);
-//     });
-
-var hackathonPage = function (hackathon, page, filters) {
-    var deferred = Q.defer();
-
-    var url = 'http://' + hackathon + '.devpost.com/submissions/search?';
-    if (page != undefined) {
-        url += "page=" + page;
-    }
-
-    if (Array.isArray(filters)) {
-        filters.forEach(function (filter) {
-            url += '&' + filter.paramKey + '=' + filter.paramValue;
-        });
-    }
-
-    request(url, function (error, response, html) {
-        var data = [];
-        if (!error) {
-            var $ = cheerio.load(html);
-            $('.gallery-item').each(function (index, element) {
-                var link = $( $(element).find('.link-to-software') ).attr('href');
-                var image = $( $(element).find('figure > img') ).attr('src');
-                var title = $( $(element).find('figcaption > div > h5') ).text().trim();
-                var desc = $( $(element).find('figcaption > div > p') ).text().trim();
-                var teamSize = $(element).find('.user-profile-link').length;
-                var slug = $( $(element).find('.link-to-software') ).attr('href');
-
-                var re = /^.*software\/(.*)\/{0,1}$/;
-                slug = slug.match(re)[1];
+                var slug = url.match(/^.*software\/(.*)\/{0,1}$/)[1];
                 data.push({
-                    'url': link,
-                    'imageUrl': image,
+                    'url': url,
+                    'imageUrl': imageUrl,
                     'title': title,
-                    'description': desc,
-                    'teamSize': teamSize,
+                    'tagline': tagline,
+                    'numMembers': numMembers,
+                    'numLikes': numLikes,
+                    'numComments': numComments,
                     'slug': slug
                 });
             });
 
             deferred.resolve(data);
         }
-        else {
-            deferred.reject(error);
-        }
-    });
+    })}, 0);
 
     return deferred.promise;
 };
+
+// var hackathonPage = function (hackathon, page, filters) {
+//     var deferred = Q.defer();
+
+//     var url = 'http://' + hackathon + '.devpost.com/submissions/search?';
+//     if (page != undefined) {
+//         url += "page=" + page;
+//     }
+
+//     if (Array.isArray(filters)) {
+//         filters.forEach(function (filter) {
+//             url += '&' + filter.paramKey + '=' + filter.paramValue;
+//         });
+//     }
+
+//     request(url, function (error, response, html) {
+//         var data = [];
+//         if (!error) {
+//             var $ = cheerio.load(html);
+//             $('.gallery-item').each(function (index, element) {
+//                 var link = $( $(element).find('.link-to-software') ).attr('href');
+//                 var image = $( $(element).find('figure > img') ).attr('src');
+//                 var title = $( $(element).find('figcaption > div > h5') ).text().trim();
+//                 var desc = $( $(element).find('figcaption > div > p') ).text().trim();
+//                 var teamSize = $(element).find('.user-profile-link').length;
+//                 var slug = $( $(element).find('.link-to-software') ).attr('href');
+
+//                 var re = /^.*software\/(.*)\/{0,1}$/;
+//                 slug = slug.match(re)[1];
+//                 data.push({
+//                     'url': link,
+//                     'imageUrl': image,
+//                     'title': title,
+//                     'description': desc,
+//                     'teamSize': teamSize,
+//                     'slug': slug
+//                 });
+//             });
+
+//             deferred.resolve(data);
+//         }
+//         else {
+//             deferred.reject(error);
+//         }
+//     });
+
+//     return deferred.promise;
+// };
 
 var hackathonProjectsAll = function (hackathon, filters) {
     var deferred = Q.defer();
