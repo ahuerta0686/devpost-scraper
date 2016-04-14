@@ -1,6 +1,7 @@
 var request = require('request'),
     cheerio = require('cheerio'),
-    Q = require('q');
+    Q = require('q'),
+    toMarkdown = require('to-markdown');
 
 /*
  * @param hackathon - Subdomain used for a hackathon page on Devpost
@@ -28,13 +29,16 @@ var hackathonPagesLength = function (hackathon) {
             }
             else deferred.resolve(1);
         }
-    })}, 0);
+    });
+    }, 0);
 
     return deferred.promise;
 };
 
 /*
  * @param hackathon - Subdomain used for a hackathon page on Devpost
+ * @param page - Page number to scrape
+ * @param filters - Any filters to apply in the URL
  */
 var hackathonProjects = function (hackathon, page, filters) {
     var deferred = Q.defer();
@@ -60,7 +64,7 @@ var hackathonProjects = function (hackathon, page, filters) {
             var $ = cheerio.load(html);
 
             /*
-             * link - URL to software page
+             * url - URL to software page
              * imageUrl - URL for the preview image
              * title - Project title
              * tagline - Short description under the title
@@ -95,59 +99,16 @@ var hackathonProjects = function (hackathon, page, filters) {
 
             deferred.resolve(data);
         }
-    })}, 0);
+    });
+    }, 0);
 
     return deferred.promise;
 };
 
-// var hackathonPage = function (hackathon, page, filters) {
-//     var deferred = Q.defer();
-
-//     var url = 'http://' + hackathon + '.devpost.com/submissions/search?';
-//     if (page != undefined) {
-//         url += "page=" + page;
-//     }
-
-//     if (Array.isArray(filters)) {
-//         filters.forEach(function (filter) {
-//             url += '&' + filter.paramKey + '=' + filter.paramValue;
-//         });
-//     }
-
-//     request(url, function (error, response, html) {
-//         var data = [];
-//         if (!error) {
-//             var $ = cheerio.load(html);
-//             $('.gallery-item').each(function (index, element) {
-//                 var link = $( $(element).find('.link-to-software') ).attr('href');
-//                 var image = $( $(element).find('figure > img') ).attr('src');
-//                 var title = $( $(element).find('figcaption > div > h5') ).text().trim();
-//                 var desc = $( $(element).find('figcaption > div > p') ).text().trim();
-//                 var teamSize = $(element).find('.user-profile-link').length;
-//                 var slug = $( $(element).find('.link-to-software') ).attr('href');
-
-//                 var re = /^.*software\/(.*)\/{0,1}$/;
-//                 slug = slug.match(re)[1];
-//                 data.push({
-//                     'url': link,
-//                     'imageUrl': image,
-//                     'title': title,
-//                     'description': desc,
-//                     'teamSize': teamSize,
-//                     'slug': slug
-//                 });
-//             });
-
-//             deferred.resolve(data);
-//         }
-//         else {
-//             deferred.reject(error);
-//         }
-//     });
-
-//     return deferred.promise;
-// };
-
+/*
+ * @param hackathon - Subdomain used for a hackathon page on Devpost
+ * @param filters - Any filters to apply in the URL
+ */
 var hackathonProjectsAll = function (hackathon, filters) {
     var deferred = Q.defer();
 
@@ -161,174 +122,177 @@ var hackathonProjectsAll = function (hackathon, filters) {
         return Q.all(promises);
     })
     .then(function (projectArrays) {
-        var output = [];
+        var data = [];
         projectArrays.forEach(function (projects) {
-            output = output.concat(projects);
+            data = data.concat(projects);
         });
 
-        deferred.resolve(output);
+        deferred.resolve(data);
     })
     .catch(function (error) {
-        deferred.rejct(error);
-    })
+        deferred.reject(error);
     });
+    }, 0);
 
     return deferred.promise;
 };
 
-hackathonProjectsAll('bitcamp17')
-.then(function (projects) {
-    console.log(projects);
-})
-.catch(function (error) {
-    console.log(error);
-});
-
-var hackathonProjectsAll = function (hackathon, filters) {
-    var deferred = Q.defer();
-
-    // var baseUrl = 'http://' + hackathon + '.devpost.com/submissions/search?page=';
-    hackathonPagesLength(hackathon)
-    .then(
-        function successCallback(numPages) {
-            var promises = [];
-            for (var i = 1; i <= numPages; i++) {
-                promises.push(hackathonPage(hackathon, i, filters));
-            }
-            Q.all(promises)
-            .then(
-                function successCallback(data) {
-                    var output = [];
-                    data.forEach(function (projects) {
-                        output = output.concat(projects);
-                    });
-                    deferred.resolve(output);
-                },
-                function errorCallback(error) {
-                    deferred.reject("ERROR");
-                });
-        },
-        function errorCallback(error) {
-            deferred.reject(error);
-        });
-
-    return deferred.promise;
-};
-
+/*
+ * @param hackathon - Subdomain used for a hackathon page on Devpost
+ */
 var hackathonFilters = function (hackathon) {
     var deferred = Q.defer();
 
     var url = 'http://' + hackathon + '.devpost.com/submissions';
+
+    setTimeout(function () {
     request(url, function (error, response, html) {
         var data = [];
-        if (!error) {
+
+        if (error)
+            deferred.reject(error);
+        else if (response.statusCode != 200)
+            deferred.reject(response);
+        else {
             var $ = cheerio.load(html);
-            $('.filter-submissions > .panel > ul > li').each(function (index, element) {
-                var filterObj = $(element).find('.checkbox > input');
+
+            $('.filter-submissions > .panel > ul > li').each(function (index, item) {
+                var filterObj = $(item).find('.checkbox > input');
+
                 data.push({
-                    paramKey: $(filterObj).attr('name'),
-                    paramValue: $(filterObj).attr('value'),
-                    // text: $(filterObj).parent().html()
-                    text: $(filterObj).parent().contents().filter(function () {
+                    paramKey: filterObj.attr('name'),
+                    paramValue: filterObj.attr('value'),
+                    text: filterObj.parent().contents().filter(function () {
                         return this.nodeType == 3;
                     }).text()
-
                 });
             });
 
             deferred.resolve(data);
         }
-        else {
-            deferred.reject(error);
-        }
     });
+    }, 0);
 
     return deferred.promise;
 };
 
-var projectFindBySlug = function (projectSlug) {
+/*
+ * @param slug - Text that follows "software/" in a Devpost project URL
+ */
+var projectFindBySlug = function (slug) {
     var deferred = Q.defer();
 
-    var url = 'http://devpost.com/software/' + projectSlug;
+    var url = 'http://devpost.com/software/' + slug;
+
+    setTimeout(function () {
     request(url, function (error, response, html) {
-        if (!error) {
+        var data = {};
+
+        if (error)
+            deferred.reject(error);
+        else if (response.statusCode != 200)
+            deferred.reject(response);
+        else {
             var $ = cheerio.load(html);
 
-            var titleObj = $('#app-title');
-            var descriptionObj = $('#software-header').find('p');
-            var detailsObj = {};
-            if ($('#app-details-left > #gallery').length)
-                detailsObj = $('#app-details-left > div:nth-of-type(2)');
-            else 
-                detailsObj = $('#app-details-left > div:nth-of-type(1)');
-            var builtWithObj = $('.cp-tag');
-            var slidesObj = $('.software_photo_image');
-            var teamMembersObj = $('.software-team-member');
-            var hackathonObj = $('.software-list-with-thumbnail');
+            /*
+             * title - Software title
+             * tagline - Short description / pitch under title
+             * slides - array containing images and captions
+             * body - markdown formatted details pane
+             * tags - array of tags used for project
+             * links - array of additional software links
+             * event - event submitted to with image and name
+             * winnings - prizes won at event
+             * team - array of team members with url for avatar, username, and full name
+             */
+            var title = $('#app-title').text();
+            var tagline = $('#software-header').find('p').text().trim();
 
-            var projectTitle = $(titleObj).text();
-            var projectDescription = $(descriptionObj).text().trim();
+            var slides = [];
+            var gallery = $('#gallery');
+            if (gallery.length) {
+                
+                gallery.find('ul > li').each(function (index, item) {
+                    slides.push({
+                        imageUrl: $(item).find('.software_photo_image').attr('src'),
+                        caption: $(item).find('p > i').text().trim()
+                    });
+                });
+            }
 
-            var projectDetails = [];
-            $(detailsObj).children().each(function (index, element) {
-                if (index % 2 == 0) {
-                    projectDetails.push({heading: $(element).text(), text: ''});
-                }
-                else {
-                    projectDetails[projectDetails.length - 1].text = $(element).text();
-                }
-            });
+            var body = {};
+            if (gallery.length)
+                body = $('#app-details-left > div:nth-of-type(2)').html().trim();
+            else
+                body = $('#app-details-left > div:nth-of-type(1)').html().trim();
 
-            var projectTags = [];
-            $(builtWithObj).each(function (index, element) {
-                projectTags.push($(element).text());
-            });
-
-            var projectImages = [];
-            $(slidesObj).each(function (index, element) {
-                projectImages.push($(element).attr('src'));
-            });
-
-            var projectMembers = [];
-            $(teamMembersObj).each(function (index, element) {
-                projectMembers.push({
-                    avatarUrl: $(element).find('.software-member-photo').attr('src'),
-                    name: $(element).find('.user-profile-link').text()
+            var tags = [];
+            $('#built-with > ul > li').each(function (index, item) {
+                var tag = $(item).find('.cp-tag');
+                tags.push({
+                    text: tag.text(),
+                    recognized: tag.hasClass('recognized-tag')
                 });
             });
 
-            var projectEvent = {};
-            projectEvent.imageUrl = $(hackathonObj).find('.software-list-thumbnail > a > img').attr('src');
-            projectEvent.name = $(hackathonObj).find('.software-list-content > p > a').text();
-            projectEvent.serviceId = $(hackathonObj).find('.software-list-content > p > a').attr('href');
-
-            var re = /https{0,1}:\/\/(.*)\.devpost\.com\//;
-            projectEvent.serviceId = projectEvent.serviceId.match(re)[1];
-
-
-            deferred.resolve({
-                title: projectTitle,
-                description: projectDescription,
-                details: projectDetails,
-                tags: projectTags,
-                imageUrls: projectImages,
-                members: projectMembers,
-                event: projectEvent,
-                slug: projectSlug
+            var links = [];
+            $('.app-links > ul > li').each(function (index, item) {
+                links.push({
+                    text: $(item).find('a > span').text(),
+                    url: $(item).find('a').attr('href')
+                });
             });
 
-        }
-        else {
-            deferred.reject(error);
+            var event = {};
+            var eventObj = $('.software-list-with-thumbnail > li');
+            event = {
+                imageUrl: eventObj.find('.software-list-thumbnail > a > img').attr('src'),
+                title: eventObj.find('.software-list-content > p').text().trim(),
+                slug: eventObj.find('.software-list-content > p > a').attr('href').match(/https{0,1}:\/\/(.*)\.devpost\.com\//)[1]
+            };
+
+            var winnings = [];
+            $('.winner').each(function (index, item) {
+                winnings.push( $(item).parent().contents().filter(function () {
+                    return this.nodeType == 3;
+                }).text().trim() );
+            });
+
+            var team = [];
+            $('.software-team-member').each(function (index, item) {
+                team.push({
+                    avatarUrl: $(item).find('div > figure > a > img').attr('src'),
+                    username: $(item).find('div > figure > a > img').attr('alt'),
+                    fullName: $(item).find('div > a.user-profile-link').text().trim()
+                });
+            });
+
+            data = {
+                title: title,
+                tagline: tagline,
+                slides: slides,
+                body: toMarkdown(body),
+                tags: tags,
+                links: links,
+                event: event,
+                winnings: winnings,
+                team: team
+            };
+
+            deferred.resolve(data);
         }
     });
+    }, 0);
 
     return deferred.promise;
 };
 
 module.exports = {
     hackathon: {
-        filters: hackathonFilters,
+        filters: {
+            all: hackathonFilters
+        }
         projects: {
             all: hackathonProjectsAll
         },

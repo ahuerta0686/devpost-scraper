@@ -1,16 +1,25 @@
 {
   "name": "devpost-scraper",
-  "version": "0.0.1",
-  "description": "Get all submitted projects from a hackathon...and more?",
+  "version": "0.1.0",
+  "description": "Access data from Devpost such as listings of hackathons projects and individual project information",
   "main": "devpost-scraper.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ahuerta0686/devpost-scraper"
+  },
   "dependencies": {
     "cheerio": "^0.20.0",
     "q": "^1.4.1",
-    "request": "^2.70.0"
-  }
+    "request": "^2.70.0",
+    "to-markdown": "^2.0.1"
+  },
+  "author": "ahuerta0686",
+  "license": "MIT",
+  "keywords": [
+    "devpost",
+    "hackathon"
+  ]
 }
