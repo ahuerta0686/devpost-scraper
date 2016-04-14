@@ -292,7 +292,7 @@ module.exports = {
     hackathon: {
         filters: {
             all: hackathonFilters
-        }
+        },
         projects: {
             all: hackathonProjectsAll
         },
