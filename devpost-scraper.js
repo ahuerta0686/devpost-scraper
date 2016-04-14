@@ -151,6 +151,42 @@ var hackathonProjects = function (hackathon, page, filters) {
 var hackathonProjectsAll = function (hackathon, filters) {
     var deferred = Q.defer();
 
+    setTimeout(function () {
+    hackathonPagesLength(hackathon)
+    .then(function (numPages) {
+        var promises = [];
+        for (var i = 0; i <= numPages; i++)
+            promises.push(hackathonProjects(hackathon, i, filters));
+
+        return Q.all(promises);
+    })
+    .then(function (projectArrays) {
+        var output = [];
+        projectArrays.forEach(function (projects) {
+            output = output.concat(projects);
+        });
+
+        deferred.resolve(output);
+    })
+    .catch(function (error) {
+        deferred.rejct(error);
+    })
+    });
+
+    return deferred.promise;
+};
+
+hackathonProjectsAll('bitcamp17')
+.then(function (projects) {
+    console.log(projects);
+})
+.catch(function (error) {
+    console.log(error);
+});
+
+var hackathonProjectsAll = function (hackathon, filters) {
+    var deferred = Q.defer();
+
     // var baseUrl = 'http://' + hackathon + '.devpost.com/submissions/search?page=';
     hackathonPagesLength(hackathon)
     .then(
