@@ -250,7 +250,7 @@ var hackathonFindBySlug = function (hackathon) {
                 deferred.resolve({
                     title: title,
                     body: body,
-                    slug: slug,
+                    slug: hackathon,
                     location: location,
                     judges: judges,
                     judgingCriteria: judgingCriteria,
