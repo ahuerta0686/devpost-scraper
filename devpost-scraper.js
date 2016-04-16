@@ -217,7 +217,7 @@ var hackathonInfo = function (hackathon) {
             var judges = [];
             $('.challenge_judge').each(function (index, item) {
                 judges.push({
-                    imageUrl: $(item).find('figure > img').attr('src'),
+                    avatarUrl: $(item).find('figure > img').attr('src'),
                     name: $(item).find('div > p > strong').text().trim(),
                     title: $(item).find('div > p > i').text().trim()
                 });
