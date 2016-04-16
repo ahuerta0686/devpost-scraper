@@ -271,6 +271,7 @@ var projectFindBySlug = function (slug) {
             data = {
                 title: title,
                 tagline: tagline,
+                slug: slug,
                 slides: slides,
                 body: toMarkdown(body),
                 tags: tags,
