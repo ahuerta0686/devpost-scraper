@@ -179,7 +179,7 @@ var hackathonFilters = function (hackathon) {
 /*
  * @param hackathon - Subdomain used for a hackathon page on Devpost
  */
-var hackathonInfo = function (hackathon) {
+var hackathonFindBySlug = function (hackathon) {
     var deferred = Q.defer();
 
     var url = 'http://' + hackathon + '.devpost.com';
@@ -250,6 +250,7 @@ var hackathonInfo = function (hackathon) {
                 deferred.resolve({
                     title: title,
                     body: body,
+                    slug: slug,
                     location: location,
                     judges: judges,
                     judgingCriteria: judgingCriteria,
@@ -380,7 +381,7 @@ var projectFindBySlug = function (slug) {
 
 module.exports = {
     hackathon: {
-        info: hackathonInfo,
+        findBySlug: hackathonFindBySlug,
         filters: {
             all: hackathonFilters
         },
