@@ -231,7 +231,8 @@ var hackathonFindBySlug = function (hackathon) {
                 });
             });
 
-            var prizeCashValue = parseInt($('.challenge-register-section > strong').text().match(/^\$([0-9,]*)/)[1].replace(/,/g, ''));
+            if($('.challenge-register-section > strong').length)
+                var prizeCashValue = parseInt($('.challenge-register-section > strong').text().match(/^\$([0-9,]*)/)[1].replace(/,/g, ''));
             var prizes = [];
             $('.prize').each(function (index, item) {
                 prizes.push({
