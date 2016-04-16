@@ -177,6 +177,95 @@ var hackathonFilters = function (hackathon) {
 };
 
 /*
+ * @param hackathon - Subdomain used for a hackathon page on Devpost
+ */
+var hackathonInfo = function (hackathon) {
+    var deferred = Q.defer();
+
+    var url = 'http://' + hackathon + '.devpost.com';
+
+    setTimeout(function () {
+    request(url, function (error, response, html) {
+        var data = {};
+
+        if (error)
+            deferred.rejct(error);
+        else if (response.statusCode != 200)
+            deferred.reject(response);
+        else {
+            var $ = cheerio.load(html);
+
+            /*
+             * title - Software title
+             * body - Markdown formatted details
+             * location - Hackathon location
+             * judges
+             * judgingCriteria
+             * prizeCashValue
+             * prizes
+             * submissionTime
+             */
+            var title = $('title').text().match(/^(.*) \| Devpost$/)[1];
+            var body = toMarkdown($('#challenge-description').html().trim());
+
+            var locationObj = $('.location');
+            var location = {};
+            location.name = locationObj.find('p').first().text().trim();
+            if (locationObj.find('p > a').length)
+                location.address = locationObj.find('p > a').text().trim();
+
+            var judges = [];
+            $('.challenge_judge').each(function (index, item) {
+                judges.push({
+                    imageUrl: $(item).find('figure > img').attr('src'),
+                    name: $(item).find('div > p > strong').text().trim(),
+                    title: $(item).find('div > p > i').text().trim()
+                });
+            });
+
+            var judgingCriteria = [];
+            $('#judging-criteria > ul > li').each(function (index, item) {
+                judgingCriteria.push({
+                    criteria: $(item).find('strong').text().trim(),
+                    description: $(item).contents().filter(function () { return this.nodeType == 3 }).text().trim()
+                });
+            });
+
+            var prizeCashValue = parseInt($('.challenge-register-section > strong').text().match(/^\$([0-9,]*)/)[1].replace(/,/g, ''));
+            var prizes = [];
+            $('.prize').each(function (index, item) {
+                prizes.push({
+                    challenge: $(item).find('h6').text().trim(),
+                    winnings: $(item).find('p:nth-of-type(2)').text().trim()
+                });
+            });
+
+            var datesUrl = url + '/details/dates';
+            var submissionTime = {};
+            request(datesUrl, function (error, response, html) {
+                var $ = cheerio.load(html);
+
+                submissionTime.open = $('table > tbody > tr > td:nth-of-type(2)').first().text().trim();
+                submissionTime.close = $('table > tbody > tr > td:nth-of-type(3)').first().text().trim();
+                deferred.resolve({
+                    title: title,
+                    body: body,
+                    location: location,
+                    judges: judges,
+                    judgingCriteria: judgingCriteria,
+                    prizeCashValue: prizeCashValue,
+                    prizes: prizes,
+                    submissionTime: submissionTime
+                });
+            });
+        }
+    });
+    }, 0);
+
+    return deferred.promise;
+};
+
+/*
  * @param slug - Text that follows "software/" in a Devpost project URL
  */
 var projectFindBySlug = function (slug) {
@@ -291,6 +380,7 @@ var projectFindBySlug = function (slug) {
 
 module.exports = {
     hackathon: {
+        info: hackathonInfo,
         filters: {
             all: hackathonFilters
         },
