@@ -1,6 +1,6 @@
 {
   "name": "devpost-scraper",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "description": "Access data from Devpost such as listings of hackathons projects and individual project information",
   "main": "devpost-scraper.js",
   "scripts": {

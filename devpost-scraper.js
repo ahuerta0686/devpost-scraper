@@ -267,6 +267,39 @@ var hackathonFindBySlug = function (hackathon) {
     return deferred.promise;
 };
 
+var hackathonSearch = function (query) {
+    var deferred = Q.defer();
+
+    var url = 'http://devpost.com/hackathons?search=' + query + '&challenge_type=all&sort_by=Recently+Added';
+
+    setTimeout(function () {
+    request(url, function (error, response, html) {
+        var data = [];
+
+        if (error)
+            deferred.reject(error);
+        else if (response.statusCode != 200)
+            deferred.reject(response);
+        else {
+            var $ = cheerio.load(html);
+
+            $('.challenge-listing').each(function (index, item) {
+                data.push({
+                    title: $(item).find('.title').text().trim(),
+                    description: $(item).find('.challenge-description').text().trim(),
+                    imageUrl: $(item).find('.challenge-logo > img').attr('src'),
+                    slug: $(item).find('a').attr('href').match(/^http:\/\/(.*)\.devpost.com.*/)[1]
+                });
+            });
+
+            deferred.resolve(data);
+        }
+    });
+    }, 0);
+
+    return deferred.promise;
+};
+
 /*
  * @param slug - Text that follows "software/" in a Devpost project URL
  */
@@ -382,6 +415,7 @@ var projectFindBySlug = function (slug) {
 
 module.exports = {
     hackathon: {
+        search: hackathonSearch,
         findBySlug: hackathonFindBySlug,
         filters: {
             all: hackathonFilters
