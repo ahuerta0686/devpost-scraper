@@ -73,14 +73,20 @@ var hackathonProjects = function (hackathon, page, filters) {
              */
             $('.gallery-item').each(function (index, item) {
                 var url = undefined;
-                if ($(item).find('.link-to-software'))
+                if ($(item).find('.link-to-software').length)
                     url = $(item).find('.link-to-software').attr('href');
                 else
                     url = $(item).find('.software-entry-link').attr('href');
                 var imageUrl = $(item).find('figure > img').attr('src');
                 var title = $(item).find('.software-entry-name > h5').text().trim();
-                var tagline = $(item).find('.software-entry-name > p').text().trim();
-                var numMembers = $(item).find('.user-profile-link').length;
+                var tagline = $(item).find('.software-entry-name > .tagline').text().trim();
+                var numMembers = undefined;
+                if ($(item).find('footer').length)
+                    numMembers = $(item).find('.user-profile-link').length;
+                else if ($(item).find('.user-profile-link').parent().text().trim().match(/& ([0-9]) other/))
+                    numMembers = parseInt($(item).find('.user-profile-link').parent().text().match(/& ([0-9]) other/)[1]) + 1;
+                else
+                    numMembers = 1;
                 var numLikes = $(item).find('.like-count').contents().filter(function () {
                     return this.nodeType == 3;
                 }).text().trim();
