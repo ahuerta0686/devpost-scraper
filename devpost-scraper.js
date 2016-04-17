@@ -72,7 +72,11 @@ var hackathonProjects = function (hackathon, page, filters) {
              * slug - Idenifier for project
              */
             $('.gallery-item').each(function (index, item) {
-                var url = $(item).find('.link-to-software').attr('href');
+                var url = undefined;
+                if ($(item).find('.link-to-software'))
+                    url = $(item).find('.link-to-software').attr('href');
+                else
+                    url = $(item).find('.software-entry-link').attr('href');
                 var imageUrl = $(item).find('figure > img').attr('src');
                 var title = $(item).find('.software-entry-name > h5').text().trim();
                 var tagline = $(item).find('.software-entry-name > p').text().trim();
@@ -285,7 +289,7 @@ var hackathonSearch = function (query) {
 
             if ($('.no-results').length)
                 deferred.resolve([]);
-            
+
             $('.challenge-listing').each(function (index, item) {
                 data.push({
                     title: $(item).find('.title').text().trim(),
