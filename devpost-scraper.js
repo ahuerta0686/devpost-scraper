@@ -126,7 +126,7 @@ var hackathonProjectsAll = function (hackathon, filters) {
     hackathonPagesLength(hackathon)
     .then(function (numPages) {
         var promises = [];
-        for (var i = 0; i <= numPages; i++)
+        for (var i = 1; i <= numPages; i++)
             promises.push(hackathonProjects(hackathon, i, filters));
 
         return Q.all(promises);
