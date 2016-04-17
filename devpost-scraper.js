@@ -283,9 +283,9 @@ var hackathonSearch = function (query) {
         else {
             var $ = cheerio.load(html);
 
-            if (!$('.no-results').length)
+            if ($('.no-results').length)
                 deferred.resolve([]);
-
+            
             $('.challenge-listing').each(function (index, item) {
                 data.push({
                     title: $(item).find('.title').text().trim(),
